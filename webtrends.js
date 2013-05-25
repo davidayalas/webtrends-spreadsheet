@@ -67,11 +67,12 @@ webtrends.fetchData = function(profile,token,dateini,datefi,_url,callback){
 /*
 * Gets auth token
 *
+* @param {String} account
 * @param {String} user
 * @param {String} pass
 */  
-webtrends.getToken = function(usuari,_pass){
-  return Utilities.base64Encode(ScriptProperties.getProperty("account")+"\\"+usuari+":"+_pass);
+webtrends.getToken = function(account,usuari,_pass){
+  return Utilities.base64Encode(account+"\\"+usuari+":"+_pass);
 }
 
 

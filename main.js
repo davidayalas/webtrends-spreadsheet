@@ -76,7 +76,7 @@ function parseResults(jsondata){
 }
 
 function main(){
-  var token = webtrends.getToken(ScriptProperties.getProperty("user"),ScriptProperties.getProperty("password"));
+  var token = webtrends.getToken(ScriptProperties.getProperty("account"),ScriptProperties.getProperty("user"),ScriptProperties.getProperty("password"));
   webtrends.fetchData("7012",token,"current_day-91","current_day-1","https://ws.webtrends.com/v3/Reporting/profiles/%profile%/reports/95df19b6d9e/?start_period=%dateini%&end_period=%datefi%&language=en-US&format=json",parseResults);
   //webtrends.fetchData("7012",token,webtrends.processDate("05/23/2013"),webtrends.processDate("05/23/2013"),"https://ws.webtrends.com/v3/Reporting/profiles/%profile%/reports/95df19b6d9e/?start_period=%dateini%&end_period=%datefi%&language=en-US&format=json",parseResults);
 }
