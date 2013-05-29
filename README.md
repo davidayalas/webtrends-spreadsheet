@@ -11,4 +11,4 @@ Steps:
 
 	[<img src="https://raw.github.com/davidayalas/webtrends-spreadsheet/master/img/screenshot1.png">](https://raw.github.com/davidayalas/webtrends-spreadsheet/master/img/screenshot1.png) <br /><br />
 
-5. You can consume Google Spreadsheet data with Google Data API and put the data in any webpage. A sample [here](https://raw.github.com/davidayalas/webtrends-spreadsheet/master/sample/index.html) 
+5. You can consume Google Spreadsheet data with Google Data API and put the data in any webpage. A sample [here](http://htmlpreview.github.io/?https://github.com/davidayalas/webtrends-spreadsheet/master/sample/index.html) 
