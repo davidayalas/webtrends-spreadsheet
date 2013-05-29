@@ -37,12 +37,14 @@ function parseResults(jsondata){
   ss.getRange("C"+c).setValue("%");
   
   c++;
-  var percent;
+  var percent, sub_percent, sum_percent=0, sum_sub_percent=0;
   
   for(var i=0,z=sorted.length;i<z;i++){
     nav = sorted[i][0];
     percent = (navs[nav].measures.Hits/totalH)*100;
+
     if(percent<1){continue;}
+    sum_percent += percent;
     
     ss.getRange("A"+c).setValue(nav);
     ss.getRange("A"+c).setFontWeight("bold");
@@ -52,15 +54,29 @@ function parseResults(jsondata){
     
     if(subrows.indexOf(nav.toLowerCase())>-1){
       sorted2 = sortObj(navs[nav].SubRows);
+      sum_sub_percent = 0;
       for(var k=0,x=sorted2.length;k<x;k++){
-        nav2 = sorted2[k][0]
-        percent = (navs[nav].SubRows[nav2].measures.Hits/totalH)*100;
-        if(percent<1){continue;}
+        nav2 = sorted2[k][0];
+        sub_percent = (navs[nav].SubRows[nav2].measures.Hits/totalH)*100;
+        if(sub_percent<1){continue;}
+        sum_sub_percent+=sub_percent;
         ss.getRange("B"+c).setValue(nav2);
-        ss.getRange("C"+c).setValue(parseInt(percent*100)/100);
+        ss.getRange("C"+c).setValue(parseInt(sub_percent*100)/100);
         c++;
-      }      
+      }
+
+      if(parseInt((percent-sum_sub_percent)*100)/100>0){
+        ss.getRange("B"+c).setValue("Suma altres <1%");
+        ss.getRange("C"+c).setValue(parseInt((percent-sum_sub_percent)*100)/100);
+        c++;
+      }
     }
+  }
+
+  if((100-sum_percent)<100){
+    ss.getRange("A"+c).setValue("Altres");
+    ss.getRange("A"+c).setFontWeight("bold");
+    ss.getRange("C"+c).setValue(parseInt((100-sum_percent)*100)/100);
   }
   
   ss.getRange("A1").setValue("Des de");
