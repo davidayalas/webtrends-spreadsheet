@@ -48,7 +48,7 @@ function parseResults(jsondata){
     
     ss.getRange("A"+c).setValue(nav);
     ss.getRange("A"+c).setFontWeight("bold");
-    ss.getRange("C"+c).setValue(parseInt(percent*100)/100);
+    ss.getRange("C"+c).setValue(roundN(percent));
     
     c++;
     
@@ -61,22 +61,22 @@ function parseResults(jsondata){
         if(sub_percent<1){continue;}
         sum_sub_percent+=sub_percent;
         ss.getRange("B"+c).setValue(nav2);
-        ss.getRange("C"+c).setValue(parseInt(sub_percent*100)/100);
+        ss.getRange("C"+c).setValue(roundN(sub_percent));
         c++;
       }
 
-      if(parseInt((percent-sum_sub_percent)*100)/100>0){
+      if(roundN(percent-sum_sub_percent)>0){
         ss.getRange("B"+c).setValue("Suma altres <1%");
-        ss.getRange("C"+c).setValue(parseInt((percent-sum_sub_percent)*100)/100);
+        ss.getRange("C"+c).setValue(roundN(percent-sum_sub_percent));
         c++;
       }
     }
   }
 
-  if((100-sum_percent)<100){
+  if(roundN(100-sum_percent)<100){
     ss.getRange("A"+c).setValue("Altres");
     ss.getRange("A"+c).setFontWeight("bold");
-    ss.getRange("C"+c).setValue(parseInt((100-sum_percent)*100)/100);
+    ss.getRange("C"+c).setValue(roundN(100-sum_percent));
   }
   
   ss.getRange("A1").setValue("Des de");
@@ -86,9 +86,18 @@ function parseResults(jsondata){
   
   var pdf = DocsList.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId()).getAs('application/pdf').getBytes();
   var attach = {fileName:'navegadors.pdf',content:pdf, mimeType:'application/pdf'};
-  MailApp.sendEmail("davixyz@gmail.com", "Estadístiques navegadors", "", {attachments:[attach]});  
+  MailApp.sendEmail("davixyz@gmail.com", "Estadístiques navegadors", "", {attachments:[attach]});
   
   return;
+}
+
+/*
+* Round numbers accurately to 2 decimals
+*
+* @param {Number} n
+*/
+function roundN(n){
+  return Math.round((parseInt(n*1000)/1000)*100)/100;
 }
 
 function main(){
