@@ -3,8 +3,7 @@
 *
 * @param {String} jsondata
 */
-function parseResults(jsondata){
-  
+var parseResults = function(jsondata){
   var subrows = "microsoft internet explorer,google chrome,firefox,safari,android browser";
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   
@@ -19,6 +18,7 @@ function parseResults(jsondata){
   var sortObj = function(a,setTotal){
     var s = []
     for(var x in a){
+      if(!a[x] || !a[x].measures) continue;
       s.push([x, a[x].measures.Hits]);
       if(setTotal){
         totalH = totalH + parseInt(a[x].measures.Hits);
@@ -26,14 +26,13 @@ function parseResults(jsondata){
     }
     return s.sort(function(a, b){return b[1] - a[1];});
   }
-  
   sorted = sortObj(navs, true);
 
   ss.getRange("A1:H500").setValue("");
   ss.getRange("A1:H500").setFontWeight("normal");
   var c=5;
-  ss.getRange("A"+c).setValue("Navegador");
-  ss.getRange("B"+c).setValue("Versió");
+  ss.getRange("A"+c).setValue("Browser");
+  ss.getRange("B"+c).setValue("Version");
   ss.getRange("C"+c).setValue("%");
   
   c++;
@@ -66,7 +65,7 @@ function parseResults(jsondata){
       }
 
       if(roundN(percent-sum_sub_percent)>0){
-        ss.getRange("B"+c).setValue("Suma altres <1%");
+        ss.getRange("B"+c).setValue("Others <1%");
         ss.getRange("C"+c).setValue(roundN(percent-sum_sub_percent));
         c++;
       }
@@ -74,19 +73,23 @@ function parseResults(jsondata){
   }
 
   if(roundN(100-sum_percent)<100){
-    ss.getRange("A"+c).setValue("Altres");
+    ss.getRange("A"+c).setValue("Others");
     ss.getRange("A"+c).setFontWeight("bold");
     ss.getRange("C"+c).setValue(roundN(100-sum_percent));
   }
   
-  ss.getRange("A1").setValue("Des de");
-  ss.getRange("B1").setValue("Fins a");
+  ss.getRange("A1").setValue("From");
+  ss.getRange("B1").setValue("To");
   ss.getRange("A2").setValue(jsondata.data[0].start_date);
   ss.getRange("B2").setValue(jsondata.data[0].end_date);
   
-  var pdf = DocsList.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId()).getAs('application/pdf').getBytes();
-  var attach = {fileName:'navegadors.pdf',content:pdf, mimeType:'application/pdf'};
-  MailApp.sendEmail("davixyz@gmail.com", "Estadístiques navegadors", "", {attachments:[attach]});
+  var email = ScriptProperties.getProperty("email");
+  
+  if(email){
+    var pdf = DocsList.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId()).getAs('application/pdf').getBytes();
+    var attach = {fileName:'browsers.pdf',content:pdf, mimeType:'application/pdf'};
+    MailApp.sendEmail(email, "Browser statistics", "", {attachments:[attach]});
+  }
   
   return;
 }
@@ -96,12 +99,11 @@ function parseResults(jsondata){
 *
 * @param {Number} n
 */
-function roundN(n){
+var roundN = function(n){
   return Math.round((parseInt(n*1000)/1000)*100)/100;
 }
 
 function main(){
   var token = webtrends.getToken(ScriptProperties.getProperty("account"),ScriptProperties.getProperty("user"),ScriptProperties.getProperty("password"));
   webtrends.fetchData("7012",token,"current_day-91","current_day-1","https://ws.webtrends.com/v3/Reporting/profiles/%profile%/reports/95df19b6d9e/?start_period=%dateini%&end_period=%datefi%&language=en-US&format=json",parseResults);
-  //webtrends.fetchData("7012",token,webtrends.processDate("05/23/2013"),webtrends.processDate("05/23/2013"),"https://ws.webtrends.com/v3/Reporting/profiles/%profile%/reports/95df19b6d9e/?start_period=%dateini%&end_period=%datefi%&language=en-US&format=json",parseResults);
 }

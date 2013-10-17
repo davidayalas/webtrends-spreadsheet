@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ca-Es">
+  <head>
+    <meta charset="utf-8">
+    <title>Browsers by version (webtrends)</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script src="https://www.google.com/jsapi"></script>
+    <script src="sheet2array.js"></script>
+    <script>
+
+      google.load("visualization", "1", {packages:["corechart"]});
+
+      function getCellStyle(r,c,m){
+        var cellstyle="";
+        if(r>3){
+          cellstyle = "border:1px solid #ddd;";
+        } 
+        if(r==4){
+          cellstyle += "font-weight:bold;color:#fff;background-color:#9E1B11;";
+        }
+        if(r>3 && m[r][0] && m[r][0].value!=undefined){
+          cellstyle += "font-weight:bold;";
+        }
+        if(r>4 && m[r][0] && m[r][0].value!=undefined){
+          cellstyle += "background-color:#8D9F82;";
+        }
+
+        return " style='" + cellstyle + "'";
+      }
+
+    	$(document).ready(function() {
+		    $.getJSON("https://spreadsheets.google.com/feeds/cells/0AqYl2ZBfAp4ZdEljUVVJcDJxdDBoTGExVnNaMGY5ZVE/od6/public/basic?alt=json-in-script&callback=?", null, function(results){
+
+          $("<table id='content' style='width:40%;border-collapse:collapse;'></table><div id='chart_div' style='width:40%;height:400px;'></div>").appendTo("body");
+
+          var matrix = sheet2array.get(results);
+
+          var browsers=[], browsers_sum=0;
+          browsers.push(["",""]);
+
+          for(var i=0;i<matrix.length;i++){
+            if(matrix[i] && matrix[i][0] && matrix[i][0].value!=undefined && i>5){
+              browsers.push([matrix[i][0].value,parseFloat(matrix[i][2].value.replace(",","."))]);
+              browsers_sum += parseFloat(matrix[i][2].value.replace(",","."));
+            }
+            $("<tr></tr>").appendTo("#content");
+            if(matrix[i]){
+              for(var k=0,y=matrix[i].length;k<y;k++){
+                $("<td "+getCellStyle(i,k,matrix)+">"+(matrix[i][k] && matrix[i][k].value?matrix[i][k].value:"")+"</td>").appendTo("#content tr:last");
+              }
+            }
+          }
+
+          var data = google.visualization.arrayToDataTable(browsers);
+          var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+          chart.draw(data);
+        });
+      });
+
+    </script>
+
+  </head>
+  <body style="font-family:verdana;font-size:.8em">
+
+  </body>
+</html>
