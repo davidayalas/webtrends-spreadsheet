@@ -7,8 +7,9 @@ var parseResults = function(jsondata){
   var subrows = "microsoft internet explorer,google chrome,firefox,safari,android browser";
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  jsondata = Utilities.jsonParse(jsondata);
-
+  jsondata = jsondata.replace(/(, \"\d+\.*\d*)(\")/g,"$1_$2"); //some versions in browsers are "11" or "11.0" and this is an issue in JSON parsing. This changes "11" with "11_" and "11.0" with "11.0_"
+  jsondata = JSON.parse(jsondata);
+  
   if(!jsondata.data){Browser.msgBox("No data available");return;}
   
   var navs = jsondata.data[0].SubRows[0];
@@ -16,7 +17,8 @@ var parseResults = function(jsondata){
   var totalH=0;
   
   var sortObj = function(a,setTotal){
-    var s = []
+    var s = [];
+    
     for(var x in a){
       if(!a[x] || !a[x].measures) continue;
       s.push([x, a[x].measures.Hits]);
@@ -31,7 +33,7 @@ var parseResults = function(jsondata){
   ss.getRange("A1:H500").setValue("");
   ss.getRange("A1:H500").setFontWeight("normal");
   var c=5;
-  ss.getRange("A"+c).setValue("Browser");
+  ss.getRange("A"+c).setValue("Navegador");
   ss.getRange("B"+c).setValue("Version");
   ss.getRange("C"+c).setValue("%");
   
@@ -50,22 +52,23 @@ var parseResults = function(jsondata){
     ss.getRange("C"+c).setValue(roundN(percent));
     
     c++;
-    
+        
     if(subrows.indexOf(nav.toLowerCase())>-1){
       sorted2 = sortObj(navs[nav].SubRows);
       sum_sub_percent = 0;
+      
       for(var k=0,x=sorted2.length;k<x;k++){
         nav2 = sorted2[k][0];
         sub_percent = (navs[nav].SubRows[nav2].measures.Hits/totalH)*100;
         if(sub_percent<1){continue;}
         sum_sub_percent+=sub_percent;
-        ss.getRange("B"+c).setValue(nav2);
+        ss.getRange("B"+c).setValue(nav2.replace("_",""));
         ss.getRange("C"+c).setValue(roundN(sub_percent));
         c++;
       }
 
       if(roundN(percent-sum_sub_percent)>0){
-        ss.getRange("B"+c).setValue("Others <1%");
+        ss.getRange("B"+c).setValue("Altres <1%");
         ss.getRange("C"+c).setValue(roundN(percent-sum_sub_percent));
         c++;
       }
@@ -73,17 +76,17 @@ var parseResults = function(jsondata){
   }
 
   if(roundN(100-sum_percent)<100){
-    ss.getRange("A"+c).setValue("Others");
+    ss.getRange("A"+c).setValue("Altres");
     ss.getRange("A"+c).setFontWeight("bold");
     ss.getRange("C"+c).setValue(roundN(100-sum_percent));
   }
   
-  ss.getRange("A1").setValue("From");
-  ss.getRange("B1").setValue("To");
+  ss.getRange("A1").setValue("Des de");
+  ss.getRange("B1").setValue("Fins a");
   ss.getRange("A2").setValue(jsondata.data[0].start_date);
   ss.getRange("B2").setValue(jsondata.data[0].end_date);
   
-  var email = ScriptProperties.getProperty("email");
+  var email = PropertiesService.getScriptProperties().getProperty("email");
   
   if(email){
     var pdf = DocsList.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId()).getAs('application/pdf').getBytes();
@@ -104,6 +107,6 @@ var roundN = function(n){
 }
 
 function main(){
-  var token = webtrends.getToken(ScriptProperties.getProperty("account"),ScriptProperties.getProperty("user"),ScriptProperties.getProperty("password"));
+  var token = webtrends.getToken(PropertiesService.getScriptProperties().getProperty("account"),PropertiesService.getScriptProperties().getProperty("user"),PropertiesService.getScriptProperties().getProperty("password"));
   webtrends.fetchData("7012",token,"current_day-91","current_day-1","https://ws.webtrends.com/v3/Reporting/profiles/%profile%/reports/95df19b6d9e/?start_period=%dateini%&end_period=%datefi%&language=en-US&format=json",parseResults);
 }
